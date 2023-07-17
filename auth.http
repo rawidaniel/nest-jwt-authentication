@@ -1,0 +1,14 @@
+### create user
+
+POST http://localhost:3000/auth/local/signup
+
+Content-Type: application/json
+
+{
+  "email":"test@gmail.com",
+  "password": "12345"
+}
+
+###
+
+GET  http://localhost:3000/
