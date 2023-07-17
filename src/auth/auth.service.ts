@@ -8,10 +8,15 @@ import { Tokens } from './types';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
   async signupLocal(dto: AuthDto): Promise<Tokens> {
     const hashedPassword = await this.hashDATA(dto.password);
@@ -92,11 +97,17 @@ export class AuthService {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, email },
-        { secret: 'at-secret-key', expiresIn: 15 * 60 },
+        {
+          secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+          expiresIn: 15 * 60,
+        },
       ),
       this.jwtService.signAsync(
         { sub: userId, email },
-        { secret: 'rt-secret-key', expiresIn: 7 * 24 * 60 * 60 },
+        {
+          secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+          expiresIn: 7 * 24 * 60 * 60,
+        },
       ),
     ]);
     return { access_token: at, refresh_token: rt };
